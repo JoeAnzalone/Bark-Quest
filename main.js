@@ -8,7 +8,6 @@ function preload() {
 var player;
 var cursors;
 var shiftKey;
-var allDogs;
 
 function create() {
     game.world.setBounds(0, 0, 1600, 1200);
@@ -23,63 +22,24 @@ function create() {
     dogTwoTone = new TwoToneDog(game, 200, 50);
 
     player = dogGrey;
-    player.body.immovable = false;
     game.camera.follow(player);
 
     cursors = game.input.keyboard.createCursorKeys();
     shiftKey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
-
-    allDogs = game.add.group();
-    allDogs.addMultiple([dogGrey, dogYellow, dogBrown, dogTwoTone]);
 }
 
 function update() {
-    player.body.velocity.set(0);
-
-    if (shiftKey.isDown) {
-        player.speed = player.baseMovementSpeed * 1.75;
-        player.animations.currentAnim.speed = player.baseAnimationSpeed * 1.75;
-    } else {
-        player.speed = player.baseMovementSpeed;
-        player.animations.currentAnim.speed = player.baseAnimationSpeed;
-    }
-
-    if (cursors.left.isUp && cursors.right.isUp && cursors.up.isUp && cursors.down.isUp) {
-        player.animations.stop();
-    }
-
-    if (cursors.up.isDown) {
-        if (cursors.right.isDown) {
-            player.body.velocity.x = player.speed;
-        } else  if (cursors.left.isDown) {
-            player.body.velocity.x = -player.speed;
-        }
-        player.play('walk-north');
-        player.body.velocity.y = -player.speed;
-    } else if (cursors.down.isDown) {
-        if (cursors.right.isDown) {
-            player.body.velocity.x = player.speed;
-        } else  if (cursors.left.isDown) {
-            player.body.velocity.x = -player.speed;
-        }
-        player.play('walk-south');
-        player.body.velocity.y = player.speed;
-    } else if (cursors.left.isDown) {
-        player.play('walk-west');
-        player.body.velocity.x = -player.speed;
-    } else if (cursors.right.isDown) {
-        player.play('walk-east');
-        player.body.velocity.x = player.speed;
-    }
-
-    game.physics.arcade.collide(allDogs);
+    player.isRunning = shiftKey.isDown;
+    player.isMovingWest = cursors.left.isDown;
+    player.isMovingEast = cursors.right.isDown;
+    player.isMovingNorth = cursors.up.isDown;
+    player.isMovingSouth = cursors.down.isDown;
 }
 
 class Dog extends Phaser.Sprite {
     constructor(game, x, y, frame) {
         super(game, x, y, 'pets', frame);
         game.physics.arcade.enable(this);
-        this.body.immovable = true;
 
         this.smoothed = false;
         this.body.collideWorldBounds = true;
@@ -91,9 +51,51 @@ class Dog extends Phaser.Sprite {
         this.animations.add('walk-north', [36, 37, 38, 37], 6, true);
 
         game.stage.addChild(this);
+        if (!Dog.all) {
+            Dog.all = game.add.group();
+        }
+        Dog.all.add(this);
 
         this.baseMovementSpeed = 125;
         this.baseAnimationSpeed = 6;
+        this.isRunning = false;
+    }
+
+    update() {
+        this.body.velocity.set(0);
+
+        this.speed = this.isRunning ? this.baseMovementSpeed * 1.75 : this.baseMovementSpeed;
+        this.animations.currentAnim.speed = this.isRunning ? this.baseAnimationSpeed * 1.75 : this.baseAnimationSpeed;
+
+        if (!this.isMovingWest && !this.isMovingEast && !this.isMovingNorth && !this.isMovingSouth) {
+            this.animations.stop();
+        }
+
+        if (this.isMovingNorth) {
+            if (this.isMovingEast) {
+                this.body.velocity.x = this.speed;
+            } else  if (this.isMovingWest) {
+                this.body.velocity.x = -this.speed;
+            }
+            this.play('walk-north');
+            this.body.velocity.y = -this.speed;
+        } else if (this.isMovingSouth) {
+            if (this.isMovingEast) {
+                this.body.velocity.x = this.speed;
+            } else  if (this.isMovingWest) {
+                this.body.velocity.x = -this.speed;
+            }
+            this.play('walk-south');
+            this.body.velocity.y = this.speed;
+        } else if (this.isMovingWest) {
+            this.play('walk-west');
+            this.body.velocity.x = -this.speed;
+        } else if (this.isMovingEast) {
+            this.play('walk-east');
+            this.body.velocity.x = this.speed;
+        }
+
+        game.physics.arcade.collide(Dog.all);
     }
 }
 
