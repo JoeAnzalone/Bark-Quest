@@ -3,11 +3,14 @@ var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game', {preload: preload, cre
 function preload() {
     // http://finalbossblues.com/timefantasy/freebies/cats-and-dogs/
     game.load.spritesheet('pets', 'animals.png', 52, 72);
+
+    // https://freesound.org/people/Princess6537/sounds/144885/
+    game.load.audio('bark', 'bark.mp3');
 }
 
 var player;
 var cursors;
-var shiftKey;
+var keys;
 
 function create() {
     game.world.setBounds(0, 0, 1600, 1200);
@@ -25,11 +28,12 @@ function create() {
     game.camera.follow(player);
 
     cursors = game.input.keyboard.createCursorKeys();
-    shiftKey = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+    keys = game.input.keyboard.addKeys({run: Phaser.Keyboard.SHIFT, bark: Phaser.Keyboard.SPACEBAR});
+    keys.bark.onDown.add(player.bark);
 }
 
 function update() {
-    player.isRunning = shiftKey.isDown;
+    player.isRunning = keys.run.isDown;
     player.isMovingWest = cursors.left.isDown;
     player.isMovingEast = cursors.right.isDown;
     player.isMovingNorth = cursors.up.isDown;
@@ -59,6 +63,11 @@ class Dog extends Phaser.Sprite {
         this.baseMovementSpeed = 125;
         this.baseAnimationSpeed = 6;
         this.isRunning = false;
+    }
+
+    bark() {
+        var bark = game.add.audio('bark');
+        bark.play();
     }
 
     update() {
