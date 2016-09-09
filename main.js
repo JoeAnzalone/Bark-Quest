@@ -4,6 +4,7 @@ function preload() {
     // http://finalbossblues.com/timefantasy/freebies/cats-and-dogs/
     game.load.spritesheet('pets', 'animals.png', 52, 72);
 
+    game.load.image('bush', 'bark.png');
     game.load.image('bark', 'bark.png');
 
     // https://freesound.org/people/Princess6537/sounds/144885/
@@ -25,6 +26,10 @@ function create() {
     dogYellow = new YellowDog(game, 100, 50);
     dogBrown = new BrownDog(game, 150, 50);
     dogTwoTone = new TwoToneDog(game, 200, 50);
+
+    for (var i = 1; i <= 25; i++) {
+        new Bush(game, game.world.randomX, game.world.randomY);
+    }
 
     player = dogGrey;
     game.camera.follow(player);
@@ -63,7 +68,6 @@ class Dog extends Phaser.Sprite {
         this.weapon.bulletSpeed = 200;
         this.weapon.trackSprite(this);
 
-        game.stage.addChild(this);
         if (!Dog.all) {
             Dog.all = game.add.group();
         }
@@ -176,5 +180,20 @@ class TwoToneDog extends Dog {
         this.animations.add('walk-west', [21, 22, 23, 22], 6, true);
         this.animations.add('walk-east', [33, 34, 35, 34], 6, true);
         this.animations.add('walk-north', [45, 46, 47, 46], 6, true);
+    }
+}
+
+class Bush extends Phaser.Sprite {
+    constructor(game, x, y) {
+        super(game, x, y, 'bush');
+        game.physics.arcade.enable(this);
+        this.body.immovable = true;
+
+        this.smoothed = false;
+        game.world.add(this);
+    }
+
+    update() {
+        game.physics.arcade.collide(this, Dog.all);
     }
 }
