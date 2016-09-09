@@ -4,6 +4,8 @@ function preload() {
     // http://finalbossblues.com/timefantasy/freebies/cats-and-dogs/
     game.load.spritesheet('pets', 'animals.png', 52, 72);
 
+    game.load.image('bark', 'bark.png');
+
     // https://freesound.org/people/Princess6537/sounds/144885/
     game.load.audio('bark', 'bark.mp3');
 }
@@ -29,7 +31,7 @@ function create() {
 
     cursors = game.input.keyboard.createCursorKeys();
     keys = game.input.keyboard.addKeys({run: Phaser.Keyboard.SHIFT, bark: Phaser.Keyboard.SPACEBAR});
-    keys.bark.onDown.add(player.bark);
+    keys.bark.onDown.add(() => player.bark());
 }
 
 function update() {
@@ -54,6 +56,13 @@ class Dog extends Phaser.Sprite {
         this.animations.add('walk-east', [24, 25, 26, 25], 6, true);
         this.animations.add('walk-north', [36, 37, 38, 37], 6, true);
 
+        this.weapon = game.add.weapon(1, 'bark');
+        this.weapon.bulletKillType = Phaser.Weapon.KILL_DISTANCE;
+        this.weapon.bulletKillDistance = 15;
+        this.weapon.bulletAngleOffset = 90;
+        this.weapon.bulletSpeed = 200;
+        this.weapon.trackSprite(this);
+
         game.stage.addChild(this);
         if (!Dog.all) {
             Dog.all = game.add.group();
@@ -63,11 +72,29 @@ class Dog extends Phaser.Sprite {
         this.baseMovementSpeed = 125;
         this.baseAnimationSpeed = 6;
         this.isRunning = false;
+        this.facing = Phaser.ANGLE_DOWN;
     }
 
     bark() {
         var bark = game.add.audio('bark');
         bark.play();
+        this.weapon.fireAngle = this.facing;
+
+        if (this.facing === Phaser.ANGLE_UP) {
+            this.weapon.trackOffset.x = this.body.offset.x + this.body.halfWidth;
+            this.weapon.trackOffset.y = this.body.height;
+        } else if (this.facing === Phaser.ANGLE_DOWN) {
+            this.weapon.trackOffset.x = this.body.offset.x + this.body.halfWidth;
+            this.weapon.trackOffset.y = this.height;
+        } else if (this.facing === Phaser.ANGLE_LEFT) {
+            this.weapon.trackOffset.x = this.body.offset.x;
+            this.weapon.trackOffset.y = this.body.offset.y + this.body.halfHeight;
+        } else if (this.facing === Phaser.ANGLE_RIGHT) {
+            this.weapon.trackOffset.x = this.body.width + this.body.offset.x;
+            this.weapon.trackOffset.y = this.body.offset.y + this.body.halfHeight;
+        }
+
+        this.weapon.fire();
     }
 
     update() {
@@ -87,6 +114,7 @@ class Dog extends Phaser.Sprite {
                 this.body.velocity.x = -this.speed;
             }
             this.play('walk-north');
+            this.facing = Phaser.ANGLE_UP;
             this.body.velocity.y = -this.speed;
         } else if (this.isMovingSouth) {
             if (this.isMovingEast) {
@@ -95,12 +123,15 @@ class Dog extends Phaser.Sprite {
                 this.body.velocity.x = -this.speed;
             }
             this.play('walk-south');
+            this.facing = Phaser.ANGLE_DOWN;
             this.body.velocity.y = this.speed;
         } else if (this.isMovingWest) {
             this.play('walk-west');
+            this.facing = Phaser.ANGLE_LEFT;
             this.body.velocity.x = -this.speed;
         } else if (this.isMovingEast) {
             this.play('walk-east');
+            this.facing = Phaser.ANGLE_RIGHT;
             this.body.velocity.x = this.speed;
         }
 
