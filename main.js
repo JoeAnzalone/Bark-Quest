@@ -4,7 +4,10 @@ function preload() {
     // http://finalbossblues.com/timefantasy/freebies/cats-and-dogs/
     game.load.spritesheet('pets', 'animals.png', 52, 72);
 
-    game.load.image('bush', 'bark.png');
+    // Original scenery spritesheet by Lanea Zimmerman; repack by Grimfist
+    // http://opengameart.org/content/tiny-16-basic#comment-28830
+    game.load.spritesheet('scenery', 'scenery.png', 32, 32);
+
     game.load.image('bark', 'bark.png');
 
     // https://freesound.org/people/Princess6537/sounds/144885/
@@ -20,7 +23,7 @@ function create() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    game.stage.backgroundColor = '#168a14';
+    game.stage.backgroundColor = '#6fa936';
 
     dogGrey = new GreyDog(game, 50, 50);
     dogYellow = new YellowDog(game, 100, 50);
@@ -185,7 +188,7 @@ class TwoToneDog extends Dog {
 
 class Bush extends Phaser.Sprite {
     constructor(game, x, y) {
-        super(game, x, y, 'bush');
+        super(game, x, y, 'scenery', 40);
         game.physics.arcade.enable(this);
         this.body.immovable = true;
 
