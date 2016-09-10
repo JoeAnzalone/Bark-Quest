@@ -25,14 +25,22 @@ function create() {
 
     game.stage.backgroundColor = '#6fa936';
 
+    for (var i = 1; i <= 50; i++) {
+        new GrassThick(game, game.world.randomX, game.world.randomY);
+        new GrassThin(game, game.world.randomX, game.world.randomY);
+        new Flowers(game, game.world.randomX, game.world.randomY);
+    }
+
+    for (var i = 1; i <= 10; i++) {
+        new Bush(game, game.world.randomX, game.world.randomY);
+        new RoundTree(game, game.world.randomX, game.world.randomY);
+        new PineTree(game, game.world.randomX, game.world.randomY);
+    }
+
     dogGrey = new GreyDog(game, 50, 50);
     dogYellow = new YellowDog(game, 100, 50);
     dogBrown = new BrownDog(game, 150, 50);
     dogTwoTone = new TwoToneDog(game, 200, 50);
-
-    for (var i = 1; i <= 25; i++) {
-        new Bush(game, game.world.randomX, game.world.randomY);
-    }
 
     player = dogGrey;
     game.camera.follow(player);
@@ -186,17 +194,60 @@ class TwoToneDog extends Dog {
     }
 }
 
-class Bush extends Phaser.Sprite {
-    constructor(game, x, y) {
-        super(game, x, y, 'scenery', 40);
+class Scenery extends Phaser.Sprite {
+    constructor(game, x, y, frame) {
+        super(game, x, y, 'scenery', frame);
         game.physics.arcade.enable(this);
         this.body.immovable = true;
 
         this.smoothed = false;
-        game.world.add(this);
+        if (!Scenery.all) {
+            Scenery.all = game.add.group();
+        }
+        Scenery.all.add(this);
     }
 
     update() {
         game.physics.arcade.collide(this, Dog.all);
+    }
+}
+
+class Bush extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 40);
+    }
+}
+
+
+class RoundTree extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 24);
+    }
+}
+
+class PineTree extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 25);
+    }
+}
+
+class GrassThick extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 31);
+        delete this.body;
+    }
+}
+
+class GrassThin extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 46);
+        delete this.body;
+    }
+}
+
+class Flowers extends Scenery {
+    constructor(game, x, y) {
+        super(game, x, y, 47);
+        delete this.body;
     }
 }
